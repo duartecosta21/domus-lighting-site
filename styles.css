@@ -7,6 +7,9 @@
 @media(max-width:760px){.brand{height:70px;width:100px}.brand img{width:100px;height:100px}.footer-brand img{width:120px;height:120px}}
 @media(max-width:380px){:root{--gap:20px}h1{font-size:46px}.architect-hero h1{font-size:44px}.scene-buttons{gap:8px}.scene-buttons button{font-size:14px;padding:9px 13px}.scope-list span{width:100%}}
 /* A luz responde à cena; os demais efeitos respondem ao visitante. */
+.hero-title-word{display:inline-block}
+.home-hero .hero-visual{overflow:hidden}
+.hero-arrival-shade{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;background:linear-gradient(135deg,#0009,#0005 55%,#0003)}
 .scene-buttons button{transition:background .25s,color .25s,border-color .25s}
 .play-icon{transition:background .25s,color .25s,transform .25s}
 .video-trigger:hover .play-icon,.video-trigger:focus-visible .play-icon{background:var(--black);color:var(--white);transform:scale(1.06)}

@@ -13,18 +13,72 @@ function animateElement(element,frames,options={}){
 motionPreference.addEventListener('change',event=>{
   if(event.matches)activeMotion.forEach(animation=>animation.finish());
 });
-// Uma abertura arquitetônica; o conteúdo permanece visível sem JavaScript.
-animateElement(document.querySelector('.hero-copy h1'),[
-  {clipPath:'inset(0 0 100% 0)',transform:'translateY(18px)'},
-  {clipPath:'inset(0 0 0 0)',transform:'translateY(0)'}
-],{duration:850});
-animateElement(document.querySelector('.hero-visual'),[
-  {clipPath:'inset(0 0 0 100%)'},
-  {clipPath:'inset(0 0 0 0)'}
-],{duration:1100});
-animateElement(document.querySelector('.hero-visual img'),[
-  {transform:'scale(1.055)'},{transform:'scale(1)'}
-],{duration:1400});
+// A principal abre como um ambiente iluminado, com a fotografia inteira.
+const homeHero=document.querySelector('.home-hero');
+if(homeHero){
+  const heading=homeHero.querySelector('h1');
+  const visual=homeHero.querySelector('.hero-visual');
+  const photo=visual.querySelector('img');
+  const title=heading.textContent;
+  function revealTitle(){
+    if(motionPreference.matches||!heading.animate)return;
+    const words=title.trim().split(/\s+/);
+    const fragment=document.createDocumentFragment();
+    words.forEach((word,index)=>{
+      const span=document.createElement('span');
+      span.className='hero-title-word';
+      span.setAttribute('aria-hidden','true');
+      span.textContent=word;
+      fragment.append(span);
+      if(index<words.length-1)fragment.append(document.createTextNode(' '));
+    });
+    heading.setAttribute('aria-label',title);
+    heading.replaceChildren(fragment);
+    let row=0;
+    let previousTop;
+    heading.querySelectorAll('.hero-title-word').forEach(word=>{
+      const top=word.getBoundingClientRect().top;
+      if(previousTop!==undefined&&Math.abs(top-previousTop)>2)row++;
+      previousTop=top;
+      animateElement(word,[
+        {opacity:.25,transform:'translateY(18px)'},
+        {opacity:1,transform:'translateY(0)'}
+      ],{duration:700,delay:row*90,fill:'backwards'});
+    });
+  }
+  // Medir com a fonte final evita trocar a quebra das linhas durante a entrada.
+  if(document.fonts)document.fonts.ready.then(revealTitle);else revealTitle();
+  function revealLight(){
+    if(motionPreference.matches||!photo.animate)return;
+    const shade=document.createElement('span');
+    shade.className='hero-arrival-shade';
+    shade.setAttribute('aria-hidden','true');
+    visual.append(shade);
+    const illumination=animateElement(shade,[{opacity:1},{opacity:0}],{duration:1250,easing:'cubic-bezier(.25,.46,.45,.94)'});
+    illumination.finished.then(()=>shade.remove(),()=>shade.remove());
+    animateElement(photo,[{transform:'scale(1.035)'},{transform:'scale(1)'}],{duration:1800,easing:'cubic-bezier(.25,.46,.45,.94)'});
+  }
+  if('IntersectionObserver' in window){
+    const arrivalObserver=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        arrivalObserver.disconnect();
+        if(photo.complete)revealLight();else photo.addEventListener('load',revealLight,{once:true});
+      }
+    },{threshold:.15});
+    arrivalObserver.observe(visual);
+  }else if(photo.complete)revealLight();else photo.addEventListener('load',revealLight,{once:true});
+}else{
+  animateElement(document.querySelector('.hero-copy h1'),[
+    {clipPath:'inset(0 0 100% 0)',transform:'translateY(18px)'},
+    {clipPath:'inset(0 0 0 0)',transform:'translateY(0)'}
+  ],{duration:850});
+  animateElement(document.querySelector('.hero-visual'),[
+    {clipPath:'inset(0 0 0 100%)'},{clipPath:'inset(0 0 0 0)'}
+  ],{duration:1100});
+  animateElement(document.querySelector('.hero-visual img'),[
+    {transform:'scale(1.055)'},{transform:'scale(1)'}
+  ],{duration:1400});
+}
 // Só as fotografias de destaque recebem uma revelação, uma vez por visita.
 if('IntersectionObserver' in window){
   const photoObserver=new IntersectionObserver(entries=>{
