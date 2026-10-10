@@ -13,6 +13,32 @@ function animateElement(element,frames,options={}){
 motionPreference.addEventListener('change',event=>{
   if(event.matches)activeMotion.forEach(animation=>animation.finish());
 });
+// Abertura pessoal sem alterar a fotografia recebida.
+const profilePage=document.body.dataset.page==='reinaldo';
+if(profilePage){
+  const begin=()=>{
+    animateElement(document.querySelector('.profile-intro'),[{opacity:.4,transform:'translateY(16px)'},{opacity:1,transform:'translateY(0)'}],{duration:750});
+  };
+  if(document.fonts)document.fonts.ready.then(begin);else begin();
+  const portrait=document.querySelector('.profile-portrait');
+  const revealPortrait=()=>animateElement(portrait,[{clipPath:'inset(0 0 12% 0)'},{clipPath:'inset(0 0 0 0)'}],{duration:900});
+  if('IntersectionObserver' in window){
+    const arrival=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){arrival.disconnect();revealPortrait();}
+    },{threshold:.15});
+    arrival.observe(portrait);
+  }else revealPortrait();
+  const quote=document.querySelector('.profile-quote');
+  if('IntersectionObserver' in window){
+    const observer=new IntersectionObserver(entries=>{
+      if(entries.some(entry=>entry.isIntersecting)){
+        observer.disconnect();
+        animateElement(quote.querySelector('.profile-quote-line'),[{transform:'scaleX(0)'},{transform:'scaleX(1)'}],{duration:600});
+      }
+    },{threshold:.25});
+    observer.observe(quote);
+  }
+}
 // A fotografia mostra o ambiente; o movimento não simula alterações de luz.
 const sceneHero=document.querySelector('[data-scene-hero],.home-hero');
 if(sceneHero){
@@ -61,7 +87,7 @@ if(sceneHero){
     },{threshold:.15});
     arrivalObserver.observe(visual);
   }else if(photo.complete)revealPhoto();else photo.addEventListener('load',revealPhoto,{once:true});
-}else{
+}else if(!profilePage){
   animateElement(document.querySelector('.hero-copy h1'),[
     {clipPath:'inset(0 0 100% 0)',transform:'translateY(18px)'},
     {clipPath:'inset(0 0 0 0)',transform:'translateY(0)'}
