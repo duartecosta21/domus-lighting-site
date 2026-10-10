@@ -123,8 +123,81 @@ menu?.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded'
 nav?.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
 window.matchMedia('(min-width:761px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
-const scenes={morning:{description:'As persianas abrem. A luz acompanha o começo do dia. A casa desperta com você.',title:'Bom dia, casa.',detail:'Persianas e iluminação no ritmo da sua manhã.'},evening:{description:'A iluminação fica mais acolhedora e o som ambiente acompanha o encontro.',title:'A casa recebe.',detail:'Luz e som para aproveitar os ambientes juntos.'},night:{description:'As luzes se ajustam e as persianas fecham. Uma cena para desacelerar.',title:'Hora de desacelerar.',detail:'Iluminação e persianas para encerrar o dia.'}};
-document.querySelectorAll('[data-scene]').forEach(button=>{button.addEventListener('click',()=>{if(button.getAttribute('aria-pressed')==='true')return;const key=button.dataset.scene;const scene=scenes[key];document.querySelectorAll('[data-scene]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));const hero=document.querySelector('.home-hero');hero.classList.remove('scene-morning','scene-evening','scene-night');hero.classList.add(`scene-${key}`);document.querySelector('#scene-description').textContent=scene.description;document.querySelector('#scene-title').textContent=scene.title;document.querySelector('#scene-detail').textContent=scene.detail;['#scene-description','.photo-caption'].forEach(selector=>{const element=document.querySelector(selector);element.getAnimations().forEach(animation=>animation.cancel());animateElement(element,[{opacity:.35,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:450});});recordInteraction('scene_select',{scene:key});});});
+const scenes={
+  morning:{image:'assets/images/cena-manha.jpg',alt:'Ambiente ilustrativo de alto padrão pela manhã, com luz natural e cortinas abertas',description:'As persianas abrem. A luz acompanha o começo do dia. A casa desperta com você.',title:'Bom dia, casa.',detail:'Persianas e iluminação no ritmo da sua manhã.'},
+  evening:{image:'assets/images/cena-receber.jpg',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e o som ambiente acompanha o encontro.',title:'A casa recebe.',detail:'Luz e som para aproveitar os ambientes juntos.'},
+  night:{image:'assets/images/cena-noite.jpg',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As luzes se ajustam e as persianas fecham. Uma cena para desacelerar.',title:'Hora de desacelerar.',detail:'Iluminação e persianas para encerrar o dia.'}
+};
+const sceneLoads=new Map();
+let sceneRequest=0;
+function prepareScene(key){
+  if(!sceneLoads.has(key)){
+    const promise=new Promise((resolve,reject)=>{
+      const image=new Image();
+      image.onload=()=>{
+        const decoded=image.decode?image.decode():Promise.resolve();
+        decoded.then(()=>resolve(image),()=>resolve(image));
+      };
+      image.onerror=()=>{sceneLoads.delete(key);reject(new Error('Cena indisponível'));};
+      image.src=scenes[key].image;
+    });
+    sceneLoads.set(key,promise);
+  }
+  return sceneLoads.get(key);
+}
+if(homeHero){
+  const photo=homeHero.querySelector('.hero-visual img');
+  const preload=()=>Object.keys(scenes).forEach(key=>prepareScene(key).catch(()=>{}));
+  if(photo.complete)preload();else photo.addEventListener('load',preload,{once:true});
+}
+document.querySelectorAll('[data-scene]').forEach(button=>{
+  button.addEventListener('click',async()=>{
+    const key=button.dataset.scene;
+    const scene=scenes[key];
+    const request=++sceneRequest;
+    const visual=homeHero.querySelector('.hero-visual');
+    const photo=visual.querySelector('img:not(.scene-outgoing)');
+    visual.setAttribute('aria-busy','true');
+    try{
+      await prepareScene(key);
+      if(request!==sceneRequest)return;
+      if(button.getAttribute('aria-pressed')==='true')return;
+      photo.getAnimations().forEach(animation=>animation.finish());
+      visual.querySelectorAll('.scene-outgoing').forEach(image=>image.remove());
+      // Dissolver dois arquivos distintos, preservando o enquadramento.
+      const outgoing=motionPreference.matches?null:photo.cloneNode();
+      if(outgoing){
+        outgoing.className='scene-outgoing';
+        outgoing.alt='';
+        outgoing.setAttribute('aria-hidden','true');
+        outgoing.removeAttribute('fetchpriority');
+        photo.after(outgoing);
+      }
+      photo.src=scene.image;
+      photo.alt=scene.alt;
+      if(outgoing){
+        const transition=animateElement(outgoing,[{opacity:1},{opacity:0}],{duration:500});
+        if(transition)transition.finished.then(()=>outgoing.remove(),()=>outgoing.remove());else outgoing.remove();
+      }
+      document.querySelectorAll('[data-scene]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+      homeHero.classList.remove('scene-morning','scene-evening','scene-night');
+      homeHero.classList.add(`scene-${key}`);
+      document.querySelector('#scene-description').textContent=scene.description;
+      document.querySelector('#scene-title').textContent=scene.title;
+      document.querySelector('#scene-detail').textContent=scene.detail;
+      ['#scene-description','.photo-caption'].forEach(selector=>{
+        const element=document.querySelector(selector);
+        element.getAnimations().forEach(animation=>animation.cancel());
+        animateElement(element,[{opacity:.35,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:450});
+      });
+      recordInteraction('scene_select',{scene:key});
+    }catch{
+      if(request===sceneRequest)document.querySelector('#scene-description').textContent='Não foi possível carregar esta cena. Tente novamente.';
+    }finally{
+      if(request===sceneRequest)visual.removeAttribute('aria-busy');
+    }
+  });
+});
 const dialog=document.querySelector('.video-dialog');
 const player=dialog?.querySelector('video');
 document.querySelectorAll('[data-video]').forEach(button=>{button.addEventListener('click',()=>{document.querySelector('#video-title').textContent=button.dataset.title;player.src=button.dataset.video;const source=dialog.querySelector('.dialog-source');source.href=button.dataset.source;dialog.showModal();animateElement(dialog,[{opacity:0,transform:'translateY(18px) scale(.98)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:300});player.play().catch(()=>{});recordInteraction('video_open',{video:button.dataset.video.split('/').pop().replace('.mp4','')});});});

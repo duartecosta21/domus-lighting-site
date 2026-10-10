@@ -9,7 +9,7 @@
 /* A luz responde à cena; os demais efeitos respondem ao visitante. */
 .hero-title-word{display:inline-block}
 .home-hero .hero-visual{overflow:hidden}
-.photo-origin{display:inline-block;font-size:12px;text-decoration:underline;text-underline-offset:3px;margin-top:12px;color:#eee}.home-hero .hero-visual img{object-position:50% 50%}
+.photo-origin{display:block;font-size:12px;margin-top:12px;color:#eee}.home-hero .hero-visual img{object-position:50% 50%}
 .scene-buttons button{transition:background .25s,color .25s,border-color .25s}
 .play-icon{transition:background .25s,color .25s,transform .25s}
 .video-trigger:hover .play-icon,.video-trigger:focus-visible .play-icon{background:var(--black);color:var(--white);transform:scale(1.06)}
