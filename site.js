@@ -124,9 +124,9 @@ nav?.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu();}
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
 window.matchMedia('(min-width:761px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
 const scenes={
-  morning:{image:'assets/images/cena-manha.jpg',alt:'Ambiente ilustrativo de alto padrão pela manhã, com luz natural e cortinas abertas',description:'As persianas abrem. A luz acompanha o começo do dia. A casa desperta com você.',title:'Bom dia, casa.',detail:'Persianas e iluminação no ritmo da sua manhã.'},
-  evening:{image:'assets/images/cena-receber.jpg',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e o som ambiente acompanha o encontro.',title:'A casa recebe.',detail:'Luz e som para aproveitar os ambientes juntos.'},
-  night:{image:'assets/images/cena-noite.jpg',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As luzes se ajustam e as persianas fecham. Uma cena para desacelerar.',title:'Hora de desacelerar.',detail:'Iluminação e persianas para encerrar o dia.'}
+  morning:{image:'assets/images/cena-manha.jpg',alt:'Ambiente ilustrativo de alto padrão pela manhã, com luz natural e cortinas abertas',description:'As cortinas se abrem no horário que você escolher, deixando a luz natural entrar.',title:'Comece o dia com luz natural.',detail:'As cortinas abrem no horário que você escolher.'},
+  evening:{image:'assets/images/cena-receber.jpg',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e sua música favorita acompanha a conversa.',title:'Tudo pronto pra receber.',detail:'Iluminação acolhedora e música no ambiente.'},
+  night:{image:'assets/images/cena-noite.jpg',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As cortinas se fecham e as luzes ficam mais suaves. É hora de relaxar.',title:'Hora de relaxar.',detail:'Luzes suaves e cortinas fechadas.'}
 };
 const sceneLoads=new Map();
 let sceneRequest=0;
