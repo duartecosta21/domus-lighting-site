@@ -112,6 +112,46 @@ function recordInteraction(event,properties={}){
   window.dataLayer.push(entry);
   document.dispatchEvent(new CustomEvent('domus:interaction',{detail:entry}));
 }
+const proposalForm=document.querySelector('.proposal-form');
+if(proposalForm){
+  proposalForm.querySelector('[type=submit]').disabled=false;
+  const review=proposalForm.querySelector('.proposal-review');
+  const message=proposalForm.querySelector('#proposal-message');
+  const whatsapp=proposalForm.querySelector('#proposal-whatsapp');
+  function updateProposal(){
+    const values=new FormData(proposalForm);
+    const name=String(values.get('name')||'').trim();
+    const city=String(values.get('city')||'').trim();
+    proposalForm.elements.namedItem('name').setCustomValidity(name?'':'Informe seu nome.');
+    proposalForm.elements.namedItem('city').setCustomValidity(city?'':'Informe a cidade da casa.');
+    const valid=name&&city&&proposalForm.checkValidity();
+    if(!valid){review.hidden=true;whatsapp.removeAttribute('href');return false;}
+    message.value=`Olá! Vim pelo site da Domus e gostaria de uma proposta de automação residencial.\n\nNome: ${name}\nCidade: ${city}\nEtapa da casa: ${values.get('stage')}\nInteresse: ${values.get('interest')}`;
+    whatsapp.href=`https://wa.me/5511968765369?text=${encodeURIComponent(message.value)}`;
+    return true;
+  }
+  let prepared=false;
+  proposalForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    if(!updateProposal()){proposalForm.reportValidity();return;}
+    const first=review.hidden;
+    prepared=true;review.hidden=false;
+    if(first)animateElement(review,[{opacity:.4,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:240});
+    recordInteraction('proposal_message_prepared',{placement:'proposal_form'});
+  });
+  proposalForm.addEventListener('input',()=>{
+    proposalForm.elements.namedItem('name').setCustomValidity('');
+    proposalForm.elements.namedItem('city').setCustomValidity('');
+    if(prepared&&updateProposal())review.hidden=false;
+  });
+  document.querySelectorAll('[data-proposal-cta]').forEach(link=>link.addEventListener('click',()=>{
+    if(link.dataset.projectStage){
+      proposalForm.elements.stage.value=link.dataset.projectStage;
+      if(prepared&&updateProposal())review.hidden=false;
+    }
+    recordInteraction('proposal_cta_click',{placement:link.closest('header')?'header':link.closest('.hero')?'hero':'content'});
+  }));
+}
 document.querySelectorAll('[data-contact-intent]').forEach(link=>{
   link.addEventListener('click',()=>recordInteraction('contact_click',{
     channel:'whatsapp',intent:link.dataset.contactIntent,
