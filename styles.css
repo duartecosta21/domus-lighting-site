@@ -26,3 +26,22 @@
 
 /* A demonstração de cenas também participa do projeto do arquiteto. */
 .architect-hero[data-scene-hero] .hero-visual{overflow:hidden}.architect-hero[data-scene-hero] .hero-visual img{object-position:50% 50%}
+
+/* Faixas e superfícies separam etapas, soluções e momento do imóvel. */
+.solutions{background:#000;color:#fff;padding-block:96px;border-block:1px solid #34312b}
+.solutions h2{max-width:16ch}.solutions .section-note{color:#bdb8b0}
+.solutions .solution-list{border:0;display:grid;gap:10px}
+.solutions .solution-list details{border:1px solid #3d3830;background:#141310}
+.solutions .solution-list details[open]{border-color:#93794f;background:#242018}
+.solutions .solution-list summary{padding:23px 26px;min-height:76px}
+.solutions .solution-list summary:after{color:#dfbd85}
+.solutions .solution-list details p{color:#d4cec4;padding:0 58px 26px 26px}
+.solutions summary:focus-visible{outline-color:#dfbd85;outline-offset:3px}
+.project-stages{background:#eee9e2;border-bottom:1px solid #d7cfc3;padding-block:90px}
+.project-stages h2{max-width:24ch}.project-stages .project-types{gap:24px;margin-top:42px}
+.project-stages .project-types article{background:#fff;border:1px solid #d4cabb;border-top:3px solid #b79560;padding:34px;display:flex;flex-direction:column;align-items:flex-start}
+.project-stages .project-types h3{max-width:26ch}.project-stages .project-types p{margin-bottom:28px}
+.project-stages .project-types .text-link{margin-top:auto;padding-top:5px}
+.workflow-list{display:grid;gap:14px}.workflow-list li,.workflow-list li:last-child{padding:27px;border:1px solid #d7cfc3;background:#faf8f4;grid-template-columns:36px 1fr;gap:20px}
+.workflow-list li:before{background:#e4d4b9;color:#514025;width:36px;height:36px;display:flex;align-items:center;justify-content:center}
+@media(max-width:760px){.solutions,.project-stages{padding-block:64px}.solutions .solutions-layout{gap:32px}.solutions .solution-list summary{padding:21px 20px;font-size:21px;min-height:72px}.solutions .solution-list details p{padding:0 42px 24px 20px;font-size:17px}.project-stages .project-types{margin-top:32px;gap:18px}.project-stages .project-types article{padding:27px 23px}.workflow-list li,.workflow-list li:last-child{padding:22px 18px;grid-template-columns:30px 1fr;gap:14px}.workflow-list li:before{width:30px;height:30px}.workflow-list h3{font-size:21px}}
