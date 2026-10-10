@@ -14,10 +14,10 @@ motionPreference.addEventListener('change',event=>{
   if(event.matches)activeMotion.forEach(animation=>animation.finish());
 });
 // A fotografia mostra o ambiente; o movimento não simula alterações de luz.
-const homeHero=document.querySelector('.home-hero');
-if(homeHero){
-  const heading=homeHero.querySelector('h1');
-  const visual=homeHero.querySelector('.hero-visual');
+const sceneHero=document.querySelector('[data-scene-hero],.home-hero');
+if(sceneHero){
+  const heading=sceneHero.querySelector('h1');
+  const visual=sceneHero.querySelector('.hero-visual');
   const photo=visual.querySelector('img');
   const title=heading.textContent;
   function revealTitle(){
@@ -168,6 +168,14 @@ const scenes={
   evening:{image:'assets/images/cena-receber.jpg',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e sua música favorita acompanha a conversa.',title:'Tudo pronto pra receber.',detail:'Iluminação acolhedora e música no ambiente.'},
   night:{image:'assets/images/cena-noite.jpg',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As cortinas se fecham e as luzes ficam mais suaves. É hora de relaxar.',title:'Hora de relaxar.',detail:'Luzes suaves e cortinas fechadas.'}
 };
+if(document.body.dataset.page==='architects'){
+  const copy={
+    morning:{title:'Cortinas abertas. Luz natural.',detail:'Uma cena para começar o dia.',description:'Apresente ao cliente uma cena que abre as cortinas e aproveita a luz natural.'},
+    evening:{title:'Iluminação para receber.',detail:'Música e luz no mesmo comando.',description:'Mostre como luz e som podem ser combinados para receber visitas.'},
+    night:{title:'Conforto para o fim do dia.',detail:'Cortinas fechadas e luz suave.',description:'Uma cena com cortinas fechadas e luz suave para o fim do dia.'}
+  };
+  Object.keys(scenes).forEach(key=>{scenes[key]={...scenes[key],...copy[key],image:`../${scenes[key].image}`};});
+}
 const sceneLoads=new Map();
 let sceneRequest=0;
 function prepareScene(key){
@@ -185,8 +193,8 @@ function prepareScene(key){
   }
   return sceneLoads.get(key);
 }
-if(homeHero){
-  const photo=homeHero.querySelector('.hero-visual img');
+if(sceneHero){
+  const photo=sceneHero.querySelector('.hero-visual img');
   const preload=()=>Object.keys(scenes).forEach(key=>prepareScene(key).catch(()=>{}));
   if(photo.complete)preload();else photo.addEventListener('load',preload,{once:true});
 }
@@ -195,7 +203,7 @@ document.querySelectorAll('[data-scene]').forEach(button=>{
     const key=button.dataset.scene;
     const scene=scenes[key];
     const request=++sceneRequest;
-    const visual=homeHero.querySelector('.hero-visual');
+    const visual=sceneHero.querySelector('.hero-visual');
     const photo=visual.querySelector('img:not(.scene-outgoing)');
     visual.setAttribute('aria-busy','true');
     try{
@@ -220,8 +228,8 @@ document.querySelectorAll('[data-scene]').forEach(button=>{
         if(transition)transition.finished.then(()=>outgoing.remove(),()=>outgoing.remove());else outgoing.remove();
       }
       document.querySelectorAll('[data-scene]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
-      homeHero.classList.remove('scene-morning','scene-evening','scene-night');
-      homeHero.classList.add(`scene-${key}`);
+      sceneHero.classList.remove('scene-morning','scene-evening','scene-night');
+      sceneHero.classList.add(`scene-${key}`);
       document.querySelector('#scene-description').textContent=scene.description;
       document.querySelector('#scene-title').textContent=scene.title;
       document.querySelector('#scene-detail').textContent=scene.detail;
