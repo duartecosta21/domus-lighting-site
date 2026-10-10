@@ -126,7 +126,7 @@ if(proposalForm){
     proposalForm.elements.namedItem('city').setCustomValidity(city?'':'Informe a cidade da casa.');
     const valid=name&&city&&proposalForm.checkValidity();
     if(!valid){review.hidden=true;whatsapp.removeAttribute('href');return false;}
-    message.value=`Olá! Vim pelo site da Domus e gostaria de uma proposta de automação residencial.\n\nNome: ${name}\nCidade: ${city}\nEtapa da casa: ${values.get('stage')}\nInteresse: ${values.get('interest')}`;
+    message.value=`Olá! Vim pelo site da Domus e gostaria de um orçamento de automação residencial.\n\nNome: ${name}\nCidade: ${city}\nEtapa da casa: ${values.get('stage')}\nInteresse: ${values.get('interest')}`;
     whatsapp.href=`https://wa.me/5511968765369?text=${encodeURIComponent(message.value)}`;
     return true;
   }
