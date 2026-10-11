@@ -47,10 +47,13 @@ if(sceneHero){
     heading.replaceChildren(fragment);
     let row=0;
     let previousTop;
-    heading.querySelectorAll('.hero-title-word').forEach(word=>{
+    const wordsByLine=[...heading.querySelectorAll('.hero-title-word')].map(word=>{
       const top=word.getBoundingClientRect().top;
       if(previousTop!==undefined&&Math.abs(top-previousTop)>2)row++;
       previousTop=top;
+      return {word,row};
+    });
+    wordsByLine.forEach(({word,row})=>{
       animateElement(word,[
         {opacity:.25,transform:'translateY(18px)'},
         {opacity:1,transform:'translateY(0)'}
@@ -179,9 +182,9 @@ nav?.addEventListener('click',event=>{if(event.target.closest('a'))closeMenu();}
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
 window.matchMedia('(min-width:761px)').addEventListener('change',event=>{if(event.matches)closeMenu();});
 const scenes={
-  morning:{image:'assets/images/cena-manha.jpg',alt:'Ambiente ilustrativo de alto padrão pela manhã, com luz natural e cortinas abertas',description:'As cortinas se abrem no horário que você escolher, deixando a luz natural entrar.',title:'Comece o dia com luz natural.',detail:'As cortinas abrem no horário que você escolher.'},
-  evening:{image:'assets/images/cena-receber.jpg',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e sua música favorita acompanha a conversa.',title:'Tudo pronto pra receber.',detail:'Iluminação acolhedora e música no ambiente.'},
-  night:{image:'assets/images/cena-noite.jpg',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As cortinas se fecham e as luzes ficam mais suaves. É hora de relaxar.',title:'Hora de relaxar.',detail:'Luzes suaves e cortinas fechadas.'}
+  morning:{image:'assets/images/cena-manha-1122.webp',alt:'Ambiente ilustrativo de alto padrão pela manhã, com luz natural e cortinas abertas',description:'As cortinas se abrem no horário que você escolher, deixando a luz natural entrar.',title:'Comece o dia com luz natural.',detail:'As cortinas abrem no horário que você escolher.'},
+  evening:{image:'assets/images/cena-receber-1122.webp',alt:'O mesmo ambiente ilustrativo ao entardecer, com iluminação acolhedora e cortinas parcialmente fechadas',description:'A iluminação fica mais acolhedora e sua música favorita acompanha a conversa.',title:'Tudo pronto pra receber.',detail:'Iluminação acolhedora e música no ambiente.'},
+  night:{image:'assets/images/cena-noite-1122.webp',alt:'O mesmo ambiente ilustrativo à noite, com cortinas fechadas e iluminação suave',description:'As cortinas se fecham e as luzes ficam mais suaves. É hora de relaxar.',title:'Hora de relaxar.',detail:'Luzes suaves e cortinas fechadas.'}
 };
 if(document.body.dataset.page==='architects'){
   const copy={
@@ -191,29 +194,37 @@ if(document.body.dataset.page==='architects'){
   };
   Object.keys(scenes).forEach(key=>{scenes[key]={...scenes[key],...copy[key],image:`../${scenes[key].image}`};});
 }
+const scenePhoto=sceneHero?.querySelector('.hero-visual img');
+Object.values(scenes).forEach(scene=>{
+  scene.srcset=[480,800,1122].map(width=>`${scene.image.replace('-1122.webp',`-${width}.webp`)} ${width}w`).join(', ');
+});
 const sceneLoads=new Map();
 let sceneRequest=0;
 function prepareScene(key){
   if(!sceneLoads.has(key)){
     const promise=new Promise((resolve,reject)=>{
       const image=new Image();
+      image.fetchPriority='low';
+      image.decoding='async';
       image.onload=()=>{
         const decoded=image.decode?image.decode():Promise.resolve();
         decoded.then(()=>resolve(image),()=>resolve(image));
       };
       image.onerror=()=>{sceneLoads.delete(key);reject(new Error('Cena indisponível'));};
+      image.sizes=scenePhoto?.sizes||'100vw';
+      image.srcset=scenes[key].srcset;
       image.src=scenes[key].image;
     });
     sceneLoads.set(key,promise);
   }
   return sceneLoads.get(key);
 }
-if(sceneHero){
-  const photo=sceneHero.querySelector('.hero-visual img');
-  const preload=()=>Object.keys(scenes).forEach(key=>prepareScene(key).catch(()=>{}));
-  if(photo.complete)preload();else photo.addEventListener('load',preload,{once:true});
-}
+// As cenas alternativas só usam banda quando o visitante demonstra interesse.
 document.querySelectorAll('[data-scene]').forEach(button=>{
+  const warm=()=>prepareScene(button.dataset.scene).catch(()=>{});
+  button.addEventListener('pointerenter',warm,{once:true});
+  button.addEventListener('focus',warm,{once:true});
+  button.addEventListener('touchstart',warm,{once:true,passive:true});
   button.addEventListener('click',async()=>{
     const key=button.dataset.scene;
     const scene=scenes[key];
@@ -236,6 +247,7 @@ document.querySelectorAll('[data-scene]').forEach(button=>{
         outgoing.removeAttribute('fetchpriority');
         photo.after(outgoing);
       }
+      photo.srcset=scene.srcset;
       photo.src=scene.image;
       photo.alt=scene.alt;
       if(outgoing){
